@@ -1,42 +1,44 @@
 classdef MassSpectrometryDataAnalysis
-    % MassSpectrometryDataAnalysis()
-    %   Load and process nanoplastics mass spectrometry data, perform quality
-    %   control, generate summary statistics and plots. Data collected from the 
-    %   Proteomics and Mass Spectrometry Core Facility - PSU Huck.
-    %   Created by: jsl5865
-    %
-    % Syntax:
-    %   Analyzer = MassSpectrometryDataAnalysis
-    %
-    % Description:
-    %   This class (via constructor) initializes an object `Analyzer` that handles
-    %   mass spectrometry datasets related to nanoplastic analysis. It performs:
-    %     • Data loading from .csv or .xlsx files
-    %     • Preprocessing
-    %       - Adding normalized spectral abundancy factor to data
-    %       - Updating original data tables
-    %     • User selection of file(s) (Gels) and parameter(s) of interest
-    %     • Concatentated data display
-    %       - Generating new tables with only parameters of interest
-    %       - Combining files to compare parameters across gels
-    %     • Visualization
-    %       - Generating protein fold enrichment plots 
-    %   Note that all files must be contained within a parent folder. Constructor
-    %   looks for all .csv files within a single folder selected upon startup.
-    %
-    % Input:
-    %   Class properties are created during constructor, no input variables to class.
-    %   Most instance methods require UI interface as input.
-    %
-    % Output:
-    %   Class does not have output.
-    %   Instance methods have outputs.
-    %
-    % Methods (public):
-    %   TotalProteins()
-    %   GelParameters(SelectionMode)
-    %   CreateExcelFile(GelData, FileName)
-    %   PlotFoldEnrchiment()
+    % <Documentation>
+        % MassSpectrometryDataAnalysis()
+        %   Load and process nanoplastics mass spectrometry data, perform quality
+        %   control, generate summary statistics and plots. Data collected from the 
+        %   Proteomics and Mass Spectrometry Core Facility - PSU Huck.
+        %   Created by: jsl5865
+        %
+        % Syntax:
+        %   Analyzer = MassSpectrometryDataAnalysis
+        %
+        % Description:
+        %   This class (via constructor) initializes an object `Analyzer` that handles
+        %   mass spectrometry datasets related to nanoplastic analysis. It performs:
+        %     • Data loading from .csv or .xlsx files
+        %     • Preprocessing
+        %       - Adding normalized spectral abundancy factor to data
+        %       - Updating original data tables
+        %     • User selection of file(s) (Gels) and parameter(s) of interest
+        %     • Concatentated data display
+        %       - Generating new tables with only parameters of interest
+        %       - Combining files to compare parameters across gels
+        %     • Visualization
+        %       - Generating protein fold enrichment plots 
+        %   Note that all files must be contained within a parent folder. Constructor
+        %   looks for all .csv files within a single folder selected upon startup.
+        %
+        % Input:
+        %   Class properties are created during constructor, no input variables to class.
+        %   Most instance methods require UI interface as input.
+        %
+        % Output:
+        %   Class does not have output.
+        %   Instance methods have outputs.
+        %
+        % Methods (public):
+        %   TotalProteins()
+        %   GelParameters(SelectionMode)
+        %   CreateExcelFile(GelData, FileName)
+        %   PlotFoldEnrchiment()
+    % <End Documentation>
 
     properties
         Variables = [
@@ -525,8 +527,8 @@ classdef MassSpectrometryDataAnalysis
 
         function [Proteins] = FoldEnrichment(~, GelData, Elutions, Fields)
             Proteins.Reference = Elutions.(Fields{1});
-            Proteins.Bound = Elutions.(Fields{2});
-            Proteins.Unbound = Elutions.(Fields{3});
+            Proteins.Unbound = Elutions.(Fields{2});
+            Proteins.Bound = Elutions.(Fields{3});
 
             Proteins.BindingRatio = Proteins.Bound ./ Proteins.Unbound;
             Proteins.Accession = GelData.Accession;
