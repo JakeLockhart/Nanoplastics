@@ -171,6 +171,10 @@ classdef MassSpectrometryDataAnalysis
             obj.ScatterProteins(Proteins);
             obj.ScatterMissingProteins(MissingProteins);
         end
+
+        function [ProteinInfo] = ProteinIdentification(obj, ProteinIDs)
+            [ProteinInfo] = UniProtIdentification(obj, ProteinIDs);
+        end
     end
 
     %% Initializtion functions
@@ -647,6 +651,65 @@ classdef MassSpectrometryDataAnalysis
             % Clickable function
             % PointsOfInterest printout function
             PointsOfInterest = 1;
+        end
+
+        function [Info] = UniProtIdentification(~, ProteinIDs)
+            Info.Accession    = ProteinIDs(:);
+            Info.ProteinName  = repmat({''}, length(ProteinIDs), 1);
+            Info.Function     = repmat({''}, length(ProteinIDs), 1);
+
+            Header = ["Accept", "application/json" 
+                      "Accept-Encoding", "identity"
+                     ];
+            Options = weboptions("ContentType", 'json', ...
+                                 "Timeout", 15, ...
+                                 "HeaderFields", Header ...
+                                );
+
+            for i = 1:length(ProteinIDs)
+                UniProtID = ProteinIDs{i};
+                url = ['https://rest.uniprot.org/uniprotkb/' UniProtID '.json'];
+
+                try 
+                    WebData = webread(url, Options);
+                    Description = WebData.proteinDescription;
+                    if isfield(Description, 'recommendedName')
+                        Info.ProteinName{i} = Description.recommendedName.fullName.value;
+                    elseif isfield(Description, 'submissionNames')
+                        Info.ProteinName{i} = Description.submissionNames.fullName.value;
+                    else
+                        Info.ProteinName{i} = 'N/A';
+                    end
+
+                    Info.Function{i} = 'N/A';
+                    if isfield(WebData, 'comments') && ~isempty(WebData.comments)
+                        comments = WebData.comments;
+
+                        if isstruct(comments)
+                            if isscalar(comments)
+                                comments = {comments};
+                            else
+                                comments = num2cell(comments);
+                            end
+                        end
+
+                        for j = 1:length(comments)
+                            comment = comments{j};
+                            if strcmp(comment.commentType, 'FUNCTION')
+                                if isfield(comment.texts, 'value')
+                                    Info.Function{i} = comment.texts.value;
+                                    break;
+                                end
+                            end
+                        end
+                    end
+
+                catch ME
+                    Info.ProteinName{i} = 'Error';
+                    Info.Function{i} = ['Error: ' ME.message];
+                end
+            end
+            
         end
 
     end
