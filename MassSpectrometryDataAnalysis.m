@@ -154,7 +154,7 @@ classdef MassSpectrometryDataAnalysis
             writetable(GelData, FileName);
         end
 
-        function [GelData, Proteins, MissingProteins] = PlotFoldEnrchiment(obj)
+        function [GelData, Proteins, MissingProteins, PointsOfInterest] = PlotFoldEnrchiment(obj)
             GelSet = UI_DefineInputUnboundElution(obj);
             Parameter = UI_GetVariables(obj, GelSet);
             Fields = fieldnames(GelSet);
@@ -168,8 +168,9 @@ classdef MassSpectrometryDataAnalysis
             Elutions = obj.ExtractValuesFromMergedTable(GelData, Fields);
             Proteins = obj.FoldEnrichment(GelData, Elutions, Fields);
             MissingProteins = obj.MissingFoldEnrichment(Proteins);
-            obj.ScatterProteins(Proteins);
+            PointsOfInterest = obj.ScatterProteins(Proteins);
             obj.ScatterMissingProteins(MissingProteins);
+            obj.UniProtIdentification(PointsOfInterest);
         end
 
         function [ProteinInfo] = ProteinIdentification(obj, ProteinIDs)
@@ -539,7 +540,7 @@ classdef MassSpectrometryDataAnalysis
         end
 
         function [PointsOfInterest] = ScatterProteins(~, Proteins)
-            figure
+            fig = figure;
 
             ValidIndex = ~isnan(Proteins.Reference) | ~isnan(Proteins.Bound) | ~isnan(Proteins.Unbound);
             Proteins.Reference = Proteins.Reference(ValidIndex);
@@ -591,8 +592,28 @@ classdef MassSpectrometryDataAnalysis
                 src.UserData.TextHandles = T;
             end
 
-            % PointsOfInterest printout function
-            PointsOfInterest = 1;
+            PointsOfInterest = {};
+            fig.KeyPressFcn = @(src, event) onKey(src, event, PlotInfo);
+
+            function onKey(~, event, scatterObj)
+                if strcmp(event.Key, 'return')
+                    redIdx = all(scatterObj.CData == [1 0 0], 2);
+                    selected = scatterObj.UserData.Accession(redIdx);
+
+                    PointsOfInterest = selected;
+
+                    if ~isempty(selected)
+                        disp('Selected proteins:');
+                        disp(selected(:));
+                    else
+                        disp('No proteins selected.');
+                    end
+
+                    uiresume(fig);
+                end
+            end
+
+            uiwait(fig);
         end
 
         function [MissingProteins] = MissingFoldEnrichment(~, Proteins)
@@ -709,7 +730,7 @@ classdef MassSpectrometryDataAnalysis
                     Info.Function{i} = ['Error: ' ME.message];
                 end
             end
-            
+            disp([Info.Accession, Info.ProteinName, Info.Function])
         end
 
     end
